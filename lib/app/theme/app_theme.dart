@@ -1,25 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:work_track/app/theme/app_colors.dart';
 
 abstract final class AppTheme {
   static ThemeData light() {
-    const seedColor = Color(0xFF0F766E);
+    return _buildTheme(brightness: Brightness.light, colors: AppColors.light);
+  }
 
+  static ThemeData dark() {
+    return _buildTheme(brightness: Brightness.dark, colors: AppColors.dark);
+  }
+
+  static ThemeData _buildTheme({
+    required Brightness brightness,
+    required AppColors colors,
+  }) {
     return ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: seedColor),
-      scaffoldBackgroundColor: const Color(0xFFF4F7F6),
+      brightness: brightness,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: colors.primary,
+        brightness: brightness,
+      ).copyWith(
+        surface: colors.surface,
+        onSurface: colors.onSurface,
+        primary: colors.primary,
+        onPrimary: colors.onPrimary,
+      ),
+      scaffoldBackgroundColor: colors.background,
       useMaterial3: true,
+      extensions: [colors],
       appBarTheme: const AppBarTheme(centerTitle: false),
       cardTheme: CardThemeData(
         elevation: 0,
-        color: Colors.white,
+        color: colors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: colors.inputFill,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: colors.border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: colors.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: colors.primary, width: 1.2),
         ),
       ),
     );

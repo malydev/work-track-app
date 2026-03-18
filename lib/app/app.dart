@@ -13,6 +13,8 @@ class WorkTrackApp extends StatelessWidget {
       title: 'Work Track',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      themeMode: ThemeMode.system,
       builder: (context, child) {
         return ResponsiveBreakpoints.builder(
           child: child!,
