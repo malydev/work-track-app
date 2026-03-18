@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:work_track/app/responsive/app_breakpoints.dart';
 import 'package:work_track/app/theme/app_theme.dart';
-import 'package:work_track/features/attendance/presentation/pages/attendance_page.dart';
+import 'package:work_track/shared/presentation/pages/app_home_page.dart';
 
 class WorkTrackApp extends StatelessWidget {
   const WorkTrackApp({super.key});
@@ -19,7 +19,7 @@ class WorkTrackApp extends StatelessWidget {
           breakpoints: AppBreakpoints.items,
         );
       },
-      home: const AttendancePage(),
+      home: const AppHomePage(),
     );
   }
 }
