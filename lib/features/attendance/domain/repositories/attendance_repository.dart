@@ -1,11 +1,11 @@
-import 'package:work_track/features/attendance/data/models/attendance_record_model.dart';
+import 'package:work_track/features/attendance/domain/entities/attendance_record.dart';
 
 abstract interface class AttendanceRepository {
-  List<AttendanceRecordModel> getRecords();
-  AttendanceRecordModel? getRecordById(String id);
-  AttendanceRecordModel? getRecordByDateKey(String dateKey, {String? userId});
-  Future<void> saveRecord(AttendanceRecordModel record);
+  List<AttendanceRecord> getRecords();
+  AttendanceRecord? getRecordById(String id);
+  AttendanceRecord? getRecordByDateKey(String dateKey, {String? userId});
+  Future<void> saveRecord(AttendanceRecord record);
   Future<void> deleteRecord(String id);
   Future<void> clearRecords();
-  Stream<List<AttendanceRecordModel>> watchRecords();
+  Stream<List<AttendanceRecord>> watchRecords();
 }

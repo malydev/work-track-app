@@ -1,5 +1,6 @@
 import 'package:work_track/features/settings/data/datasources/settings_local_data_source.dart';
-import 'package:work_track/features/settings/data/models/app_settings_model.dart';
+import 'package:work_track/features/settings/data/mappers/app_settings_mapper.dart';
+import 'package:work_track/features/settings/domain/entities/app_settings.dart';
 import 'package:work_track/features/settings/domain/repositories/settings_repository.dart';
 
 class SettingsRepositoryImpl implements SettingsRepository {
@@ -8,26 +9,28 @@ class SettingsRepositoryImpl implements SettingsRepository {
   final SettingsLocalDataSource _localDataSource;
 
   @override
-  AppSettingsModel? getSettings() {
-    return _localDataSource.getSettings();
+  AppSettings? getSettings() {
+    return _localDataSource.getSettings()?.toEntity();
   }
 
   @override
-  AppSettingsModel getResolvedSettings({
+  AppSettings getResolvedSettings({
     required String fallbackLocaleCode,
     required String fallbackRegionCode,
     required String fallbackTimeZoneId,
   }) {
-    return _localDataSource.getResolvedSettings(
-      fallbackLocaleCode: fallbackLocaleCode,
-      fallbackRegionCode: fallbackRegionCode,
-      fallbackTimeZoneId: fallbackTimeZoneId,
-    );
+    return _localDataSource
+        .getResolvedSettings(
+          fallbackLocaleCode: fallbackLocaleCode,
+          fallbackRegionCode: fallbackRegionCode,
+          fallbackTimeZoneId: fallbackTimeZoneId,
+        )
+        .toEntity();
   }
 
   @override
-  Future<void> saveSettings(AppSettingsModel settings) {
-    return _localDataSource.saveSettings(settings);
+  Future<void> saveSettings(AppSettings settings) {
+    return _localDataSource.saveSettings(settings.toModel());
   }
 
   @override
@@ -36,7 +39,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
   }
 
   @override
-  Stream<AppSettingsModel?> watchSettings() {
-    return _localDataSource.watchSettings();
+  Stream<AppSettings?> watchSettings() {
+    return _localDataSource.watchSettings().map(
+      (settings) => settings?.toEntity(),
+    );
   }
 }

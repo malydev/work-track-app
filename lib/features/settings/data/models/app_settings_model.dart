@@ -48,6 +48,8 @@ class AppSettingsModel {
 
 enum AppThemeMode { system, light, dark }
 
+typedef AppThemeModeModel = AppThemeMode;
+
 class WorkScheduleModel {
   const WorkScheduleModel({
     required this.expectedCheckInMinutes,
@@ -69,6 +71,8 @@ class WorkScheduleModel {
 }
 
 enum WorkDay { monday, tuesday, wednesday, thursday, friday, saturday, sunday }
+
+typedef WorkDayModel = WorkDay;
 
 class AppThemeModeAdapter extends TypeAdapter<AppThemeMode> {
   @override

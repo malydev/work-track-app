@@ -1,5 +1,6 @@
 import 'package:work_track/features/user/data/datasources/user_local_data_source.dart';
-import 'package:work_track/features/user/data/models/user_profile_model.dart';
+import 'package:work_track/features/user/data/mappers/user_profile_mapper.dart';
+import 'package:work_track/features/user/domain/entities/user_profile.dart';
 import 'package:work_track/features/user/domain/repositories/user_repository.dart';
 
 class UserRepositoryImpl implements UserRepository {
@@ -8,13 +9,13 @@ class UserRepositoryImpl implements UserRepository {
   final UserLocalDataSource _localDataSource;
 
   @override
-  UserProfileModel? getProfile() {
-    return _localDataSource.getProfile();
+  UserProfile? getProfile() {
+    return _localDataSource.getProfile()?.toEntity();
   }
 
   @override
-  Future<void> saveProfile(UserProfileModel profile) {
-    return _localDataSource.saveProfile(profile);
+  Future<void> saveProfile(UserProfile profile) {
+    return _localDataSource.saveProfile(profile.toModel());
   }
 
   @override
@@ -23,7 +24,9 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Stream<UserProfileModel?> watchProfile() {
-    return _localDataSource.watchProfile();
+  Stream<UserProfile?> watchProfile() {
+    return _localDataSource.watchProfile().map(
+      (profile) => profile?.toEntity(),
+    );
   }
 }
