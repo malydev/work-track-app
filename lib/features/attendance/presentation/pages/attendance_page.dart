@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:work_track/app/theme/app_colors.dart';
 import 'package:work_track/features/attendance/presentation/controllers/attendance_controller.dart';
+import 'package:work_track/shared/constants/ui_constants.dart';
 import 'package:work_track/shared/providers/app_providers.dart';
 
 class AttendancePage extends ConsumerWidget {
@@ -28,7 +29,7 @@ class AttendancePage extends ConsumerWidget {
 
     return SafeArea(
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 140),
+        padding: UiSpacing.pagePadding,
         children: [
           Text(
             'Marcado diario',
@@ -36,18 +37,18 @@ class AttendancePage extends ConsumerWidget {
               context,
             ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: UiSpacing.sm),
           Text(
             'Una vista limpia para registrar tu jornada y ver el estado del dia.',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: colors.onSurface.withValues(alpha: 0.72),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: UiSpacing.cardLg),
           Container(
-            padding: const EdgeInsets.all(24),
+            padding: UiSpacing.cardLargePadding,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(32),
+              borderRadius: BorderRadius.circular(UiRadius.hero),
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -59,7 +60,7 @@ class AttendancePage extends ConsumerWidget {
               boxShadow: [
                 BoxShadow(
                   color: colors.primary.withValues(alpha: 0.32),
-                  blurRadius: 28,
+                  blurRadius: UiSpacing.cardXl,
                   offset: const Offset(0, 18),
                 ),
               ],
@@ -73,7 +74,7 @@ class AttendancePage extends ConsumerWidget {
                     color: colors.onPrimary.withValues(alpha: 0.86),
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: UiSpacing.sm),
                 Text(
                   todayRecord == null
                       ? 'Listo para registrar tu primera marcacion'
@@ -85,10 +86,10 @@ class AttendancePage extends ConsumerWidget {
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: UiSpacing.card),
                 Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
+                  spacing: UiSpacing.lg,
+                  runSpacing: UiSpacing.lg,
                   children: [
                     _InfoChip(
                       label: 'Entrada',
@@ -113,7 +114,7 @@ class AttendancePage extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: UiSpacing.cardXl),
                 Row(
                   children: [
                     Expanded(
@@ -130,13 +131,13 @@ class AttendancePage extends ConsumerWidget {
                         style: FilledButton.styleFrom(
                           backgroundColor: colors.onPrimary,
                           foregroundColor: colors.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          padding: UiSpacing.buttonPadding,
                         ),
                         icon: const Icon(Icons.login_rounded),
                         label: const Text('Marcar entrada'),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: UiSpacing.lg),
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed:
@@ -153,7 +154,7 @@ class AttendancePage extends ConsumerWidget {
                           side: BorderSide(
                             color: colors.onPrimary.withValues(alpha: 0.36),
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          padding: UiSpacing.buttonPadding,
                         ),
                         icon: const Icon(Icons.logout_rounded),
                         label: const Text('Marcar salida'),
@@ -164,7 +165,7 @@ class AttendancePage extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: UiSpacing.cardLg),
           Row(
             children: [
               Expanded(
@@ -175,7 +176,7 @@ class AttendancePage extends ConsumerWidget {
                   tone: colors.surface,
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: UiSpacing.xl),
               Expanded(
                 child: _StatCard(
                   title: 'Promedio retraso',
@@ -188,14 +189,14 @@ class AttendancePage extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: UiSpacing.cardLg),
           Text(
             'Actividad reciente',
             style: Theme.of(
               context,
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: UiSpacing.xl),
           if (attendanceAsync.asData?.value.isEmpty ?? true)
             _EmptyPanel(
               icon: Icons.event_busy_rounded,
@@ -207,7 +208,7 @@ class AttendancePage extends ConsumerWidget {
                 .take(3)
                 .map(
                   (record) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.only(bottom: UiSpacing.lg),
                     child: _RecentRecordCard(record: record),
                   ),
                 ),
@@ -250,10 +251,10 @@ class _InfoChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: UiSpacing.chipPadding,
       decoration: BoxDecoration(
         color: foreground.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(UiRadius.lg),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -264,7 +265,7 @@ class _InfoChip extends StatelessWidget {
               color: foreground.withValues(alpha: 0.78),
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: UiSpacing.xxs),
           Text(
             value,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -296,17 +297,17 @@ class _StatCard extends StatelessWidget {
     final colors = context.appColors;
 
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: UiSpacing.cardPadding,
       decoration: BoxDecoration(
         color: tone.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(UiRadius.card),
         border: Border.all(color: colors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title, style: Theme.of(context).textTheme.labelLarge),
-          const SizedBox(height: 10),
+          const SizedBox(height: UiSpacing.md),
           Text(
             value,
             style: Theme.of(
@@ -335,10 +336,10 @@ class _RecentRecordCard extends StatelessWidget {
     final colors = context.appColors;
 
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: UiSpacing.cardPadding,
       decoration: BoxDecoration(
         color: colors.surface.withValues(alpha: 0.82),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(UiRadius.card),
         border: Border.all(color: colors.border),
       ),
       child: Row(
@@ -348,14 +349,14 @@ class _RecentRecordCard extends StatelessWidget {
             height: 46,
             decoration: BoxDecoration(
               color: colors.primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(UiRadius.sm),
             ),
             child: Icon(
               Icons.access_time_filled_rounded,
               color: colors.primary,
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: UiSpacing.xl),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -366,7 +367,7 @@ class _RecentRecordCard extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: UiSpacing.xxs),
                 Text(
                   'Entrada ${AttendancePage._formatTime(record.checkInAt)}'
                   '${record.checkOutAt != null ? ' • Salida ${AttendancePage._formatTime(record.checkOutAt!)}' : ''}',
@@ -412,20 +413,20 @@ class _EmptyPanel extends StatelessWidget {
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         color: colors.surface.withValues(alpha: 0.82),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(UiRadius.card),
         border: Border.all(color: colors.border),
       ),
       child: Column(
         children: [
           Icon(icon, size: 34, color: colors.primary),
-          const SizedBox(height: 12),
+          const SizedBox(height: UiSpacing.lg),
           Text(
             title,
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: UiSpacing.xs),
           Text(
             subtitle,
             textAlign: TextAlign.center,

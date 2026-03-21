@@ -17,6 +17,7 @@ dependencies:
   path_provider: ^2.1.5
   responsive_framework: ^1.5.1
   riverpod: 3.0.3
+  calendar_view: ^2.0.0
 
 dev_dependencies:
   flutter_test:

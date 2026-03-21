@@ -8,6 +8,7 @@ import 'package:work_track/features/attendance/domain/repositories/attendance_re
 import 'package:work_track/features/attendance/domain/usecases/calculate_late_arrival.dart';
 import 'package:work_track/features/attendance/domain/usecases/register_check_in.dart';
 import 'package:work_track/features/attendance/domain/usecases/register_check_out.dart';
+import 'package:work_track/features/attendance/domain/usecases/save_attendance_record.dart';
 import 'package:work_track/features/settings/data/datasources/settings_local_data_source.dart';
 import 'package:work_track/features/settings/data/repositories/settings_repository_impl.dart';
 import 'package:work_track/features/settings/domain/entities/app_settings.dart';
@@ -75,6 +76,12 @@ final registerCheckInUseCaseProvider = Provider<RegisterCheckIn>((ref) {
 
 final registerCheckOutUseCaseProvider = Provider<RegisterCheckOut>((ref) {
   return RegisterCheckOut(ref.watch(attendanceRepositoryProvider));
+});
+
+final saveAttendanceRecordUseCaseProvider = Provider<SaveAttendanceRecord>((
+  ref,
+) {
+  return SaveAttendanceRecord(ref.watch(attendanceRepositoryProvider));
 });
 
 final deviceLocaleProvider = Provider<Locale>((ref) {

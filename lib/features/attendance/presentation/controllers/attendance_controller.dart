@@ -82,6 +82,34 @@ class AttendanceController extends Notifier<AttendanceControllerState> {
     }
   }
 
+  Future<void> saveNote({
+    required AttendanceRecord record,
+    required String? note,
+  }) async {
+    state = state.copyWith(isSubmitting: true, errorMessage: null);
+
+    try {
+      final normalizedNote = note?.trim();
+      final updated = record.copyWith(
+        notes:
+            normalizedNote == null || normalizedNote.isEmpty
+                ? null
+                : normalizedNote,
+        updatedAt: DateTime.now(),
+        clearNotes: normalizedNote == null || normalizedNote.isEmpty,
+      );
+
+      await ref.read(saveAttendanceRecordUseCaseProvider).call(updated);
+
+      state = state.copyWith(isSubmitting: false, lastRecord: updated);
+    } catch (_) {
+      state = state.copyWith(
+        isSubmitting: false,
+        errorMessage: AttendanceMessages.saveNoteError,
+      );
+    }
+  }
+
   void clearError() {
     state = state.copyWith(errorMessage: null);
   }

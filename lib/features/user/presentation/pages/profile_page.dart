@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:work_track/app/theme/app_colors.dart';
 import 'package:work_track/features/user/presentation/controllers/user_profile_controller.dart';
+import 'package:work_track/shared/constants/ui_constants.dart';
 import 'package:work_track/shared/providers/app_providers.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
@@ -49,7 +50,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
     return SafeArea(
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 140),
+        padding: UiSpacing.pagePadding,
         children: [
           Text(
             'Perfil',
@@ -57,7 +58,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               context,
             ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: UiSpacing.sm),
           Text(
             'Administra tu informacion personal y revisa tu configuracion activa.',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -66,17 +67,17 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           ),
           const SizedBox(height: 22),
           Container(
-            padding: const EdgeInsets.all(24),
+            padding: UiSpacing.cardLargePadding,
             decoration: BoxDecoration(
               color: colors.surface.withValues(alpha: 0.82),
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: BorderRadius.circular(UiRadius.sheet),
               border: Border.all(color: colors.border),
             ),
             child: Column(
               children: [
                 Container(
-                  width: 88,
-                  height: 88,
+                  width: UiRadius.circleAvatar,
+                  height: UiRadius.circleAvatar,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
@@ -99,16 +100,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     labelText: 'Nombre completo',
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: UiSpacing.xl),
                 TextField(
                   controller: _emailController,
                   decoration: const InputDecoration(
                     labelText: 'Correo electronico',
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: UiSpacing.xl),
                 InkWell(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(UiRadius.md),
                   onTap: _pickBirthDate,
                   child: InputDecorator(
                     decoration: const InputDecoration(labelText: 'Cumpleanos'),
@@ -119,13 +120,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: UiSpacing.card),
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
                     onPressed: controllerState.isSaving ? null : _saveProfile,
                     style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      padding: UiSpacing.buttonPadding,
                     ),
                     child: const Text('Guardar perfil'),
                   ),
@@ -140,10 +141,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               context,
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: UiSpacing.xl),
           Wrap(
-            spacing: 12,
-            runSpacing: 12,
+            spacing: UiSpacing.lg,
+            runSpacing: UiSpacing.lg,
             children: [
               _ProfileStat(label: 'Region', value: settings.regionCode ?? '--'),
               _ProfileStat(
@@ -228,10 +229,10 @@ class _ProfileStat extends StatelessWidget {
 
     return Container(
       width: 160,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UiSpacing.xxl),
       decoration: BoxDecoration(
         color: colors.surface.withValues(alpha: 0.82),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(UiRadius.xl),
         border: Border.all(color: colors.border),
       ),
       child: Column(
@@ -243,7 +244,7 @@ class _ProfileStat extends StatelessWidget {
               color: colors.onSurface.withValues(alpha: 0.66),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: UiSpacing.sm),
           Text(
             value,
             style: Theme.of(

@@ -5,6 +5,7 @@ import 'package:work_track/app/theme/app_colors.dart';
 import 'package:work_track/features/attendance/presentation/pages/attendance_history_page.dart';
 import 'package:work_track/features/attendance/presentation/pages/attendance_page.dart';
 import 'package:work_track/features/user/presentation/pages/profile_page.dart';
+import 'package:work_track/shared/constants/ui_constants.dart';
 
 class AppHomePage extends StatefulWidget {
   const AppHomePage({super.key});
@@ -14,11 +15,11 @@ class AppHomePage extends StatefulWidget {
 }
 
 class _AppHomePageState extends State<AppHomePage> {
-  int _currentIndex = 0;
+  int _currentIndex = 1;
 
   static const _pages = [
-    AttendancePage(),
     AttendanceHistoryPage(),
+    AttendancePage(),
     ProfilePage(),
   ];
 
@@ -45,61 +46,73 @@ class _AppHomePageState extends State<AppHomePage> {
             child: const SizedBox.expand(),
           ),
           IndexedStack(index: _currentIndex, children: _pages),
-        ],
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(28),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: Container(
-              decoration: BoxDecoration(
-                color: colors.surface.withValues(alpha: 0.72),
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: colors.border.withValues(alpha: 0.7)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
-                    blurRadius: 24,
-                    offset: const Offset(0, 12),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: UiSpacing.navOuterPadding,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(UiRadius.panel),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(
+                    sigmaX: UiEffects.navBlurSigma,
+                    sigmaY: UiEffects.navBlurSigma,
                   ),
-                ],
-              ),
-              child: SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 10,
-                  ),
-                  child: Row(
-                    children: [
-                      _NavItem(
-                        icon: Icons.fingerprint_rounded,
-                        label: 'Marcar',
-                        selected: _currentIndex == 0,
-                        onTap: () => setState(() => _currentIndex = 0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(
+                        alpha: UiEffects.navSurfaceAlpha,
                       ),
-                      _NavItem(
-                        icon: Icons.calendar_month_rounded,
-                        label: 'Calendario',
-                        selected: _currentIndex == 1,
-                        onTap: () => setState(() => _currentIndex = 1),
+                      borderRadius: BorderRadius.circular(UiRadius.panel),
+                      border: Border.all(
+                        color: colors.border.withValues(
+                          alpha: UiEffects.navBorderAlpha,
+                        ),
                       ),
-                      _NavItem(
-                        icon: Icons.person_rounded,
-                        label: 'Perfil',
-                        selected: _currentIndex == 2,
-                        onTap: () => setState(() => _currentIndex = 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(
+                            alpha: UiEffects.navShadowAlpha,
+                          ),
+                          blurRadius: UiEffects.navShadowBlur,
+                          offset: UiEffects.navShadowOffset,
+                        ),
+                      ],
+                    ),
+                    child: SafeArea(
+                      top: false,
+                      child: Padding(
+                        padding: UiSpacing.navInnerPadding,
+                        child: Row(
+                          children: [
+                            _NavItem(
+                              icon: Icons.fingerprint_rounded,
+                              label: 'Calendario',
+                              selected: _currentIndex == 0,
+                              onTap: () => setState(() => _currentIndex = 0),
+                            ),
+                            _NavItem(
+                              icon: Icons.calendar_month_rounded,
+
+                              label: 'Marcar',
+                              selected: _currentIndex == 1,
+                              onTap: () => setState(() => _currentIndex = 1),
+                            ),
+                            _NavItem(
+                              icon: Icons.person_rounded,
+                              label: 'Perfil',
+                              selected: _currentIndex == 2,
+                              onTap: () => setState(() => _currentIndex = 2),
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -124,24 +137,26 @@ class _NavItem extends StatelessWidget {
 
     return Expanded(
       child: InkWell(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(UiRadius.xl),
         onTap: onTap,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
+          duration: UiMotion.fast,
           curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: UiSpacing.navItemPadding,
           decoration: BoxDecoration(
             color:
                 selected
-                    ? colors.primary.withValues(alpha: 0.14)
+                    ? colors.primary.withValues(
+                      alpha: UiEffects.navSelectedAlpha,
+                    )
                     : Colors.transparent,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(UiRadius.xl),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(icon, color: selected ? colors.primary : colors.onSurface),
-              const SizedBox(height: 6),
+              const SizedBox(height: UiSpacing.xs),
               Text(
                 label,
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
