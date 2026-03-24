@@ -1,4 +1,3 @@
-import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:work_track/app/theme/app_colors.dart';
@@ -16,14 +15,13 @@ class AttendanceHistoryPage extends ConsumerStatefulWidget {
 }
 
 class _AttendanceHistoryPageState extends ConsumerState<AttendanceHistoryPage> {
-  final _eventController = EventController<AttendanceRecord>();
   DateTime _selectedDate = DateTime.now();
-  List<AttendanceRecord> _lastSyncedRecords = const [];
+  late DateTime _visibleMonth;
 
   @override
-  void dispose() {
-    _eventController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _visibleMonth = DateTime(_selectedDate.year, _selectedDate.month);
   }
 
   @override
@@ -60,89 +58,48 @@ class _AttendanceHistoryPageState extends ConsumerState<AttendanceHistoryPage> {
           const SizedBox(height: UiSpacing.cardLg),
           historyAsync.when(
             data: (records) {
-              _syncEvents(records);
-
+              final recordsByDate = {
+                for (final record in records) record.dateKey: record,
+              };
               return Column(
                 children: [
                   _SummaryPanel(records: records),
                   const SizedBox(height: UiSpacing.cardLg),
-                  Container(
-                    padding: UiSpacing.cardPadding,
-                    decoration: BoxDecoration(
-                      color: colors.surface.withValues(alpha: 0.82),
-                      borderRadius: BorderRadius.circular(UiRadius.sheet),
-                      border: Border.all(color: colors.border),
-                    ),
-                    child: CalendarControllerProvider<AttendanceRecord>(
-                      controller: _eventController,
-                      child: MonthView<AttendanceRecord>(
-                        monthViewThemeSettings: MonthViewThemeSettings(
-                          weekDayTextStyle: Theme.of(
-                            context,
-                          ).textTheme.labelMedium?.copyWith(
-                            color: colors.onSurface.withValues(alpha: 0.62),
-                            fontWeight: FontWeight.w700,
-                          ),
-                          textStyle: Theme.of(
-                            context,
-                          ).textTheme.labelLarge?.copyWith(
-                            color: colors.onSurface,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          headerStyle: HeaderStyle(
-                            headerTextStyle: Theme.of(
-                              context,
-                            ).textTheme.titleLarge?.copyWith(
-                              color: colors.onSurface,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          cellsInMonthHighlightColor: colors.primary,
-                          cellsInMonthHighlightedTitleColor: colors.onPrimary,
+                  _MonthCalendar(
+                    visibleMonth: _visibleMonth,
+                    selectedDate: _selectedDate,
+                    recordsByDate: recordsByDate,
+                    onPreviousMonth:
+                        () => setState(
+                          () =>
+                              _visibleMonth = DateTime(
+                                _visibleMonth.year,
+                                _visibleMonth.month - 1,
+                              ),
                         ),
-                        monthViewStyle: MonthViewStyle(
-                          initialMonth: _selectedDate,
-                          cellAspectRatio: 1.05,
-                          showBorder: false,
-                          showWeekTileBorder: false,
-                          hideDaysNotInMonth: false,
-                          startDay: WeekDays.monday,
+                    onNextMonth:
+                        () => setState(
+                          () =>
+                              _visibleMonth = DateTime(
+                                _visibleMonth.year,
+                                _visibleMonth.month + 1,
+                              ),
                         ),
-                        monthViewBuilders: MonthViewBuilders<AttendanceRecord>(
-                          weekDayStringBuilder: _weekDayLabel,
-                          cellBuilder: (
-                            date,
-                            events,
-                            isToday,
-                            isInMonth,
-                            hideDaysNotInMonth,
-                          ) {
-                            final record =
-                                events.isEmpty ? null : events.first.event;
-                            return _CalendarCell(
-                              date: date,
-                              isToday: isToday,
-                              isInMonth: isInMonth,
-                              record: record,
-                              onTap: () => setState(() => _selectedDate = date),
-                            );
-                          },
-                          onCellTap: (events, date) {
-                            setState(() => _selectedDate = date);
-                          },
-                        ),
-                      ),
-                    ),
+                    onSelectDate:
+                        (date) => setState(() {
+                          _selectedDate = date;
+                          _visibleMonth = DateTime(date.year, date.month);
+                        }),
                   ),
                   const SizedBox(height: UiSpacing.cardLg),
                   _SelectedDayPanel(
                     selectedDate: _selectedDate,
-                    record: _recordForSelectedDate(records),
+                    record: _recordForSelectedDate(recordsByDate),
                     onAddNote:
-                        _recordForSelectedDate(records) == null
+                        _recordForSelectedDate(recordsByDate) == null
                             ? null
                             : () => _showNoteSheet(
-                              _recordForSelectedDate(records)!,
+                              _recordForSelectedDate(recordsByDate)!,
                             ),
                   ),
                 ],
@@ -156,66 +113,10 @@ class _AttendanceHistoryPageState extends ConsumerState<AttendanceHistoryPage> {
     );
   }
 
-  void _syncEvents(List<AttendanceRecord> records) {
-    if (_sameRecords(records, _lastSyncedRecords)) {
-      return;
-    }
-
-    _eventController.removeAll(_eventController.allEvents);
-
-    for (final record in records) {
-      _eventController.add(
-        CalendarEventData<AttendanceRecord>(
-          date: DateTime(
-            record.checkInAt.year,
-            record.checkInAt.month,
-            record.checkInAt.day,
-          ),
-          title: record.notes?.isNotEmpty == true ? 'Con nota' : 'Marcado',
-          description: record.notes,
-          color:
-              record.checkOutAt == null
-                  ? context.appColors.warning
-                  : context.appColors.success,
-          event: record,
-        ),
-      );
-    }
-
-    _lastSyncedRecords = List<AttendanceRecord>.from(records);
-  }
-
-  bool _sameRecords(
-    List<AttendanceRecord> current,
-    List<AttendanceRecord> previous,
+  AttendanceRecord? _recordForSelectedDate(
+    Map<String, AttendanceRecord> recordsByDate,
   ) {
-    if (identical(current, previous)) {
-      return true;
-    }
-    if (current.length != previous.length) {
-      return false;
-    }
-
-    for (var index = 0; index < current.length; index++) {
-      if (current[index].id != previous[index].id ||
-          current[index].updatedAt != previous[index].updatedAt ||
-          current[index].notes != previous[index].notes ||
-          current[index].checkOutAt != previous[index].checkOutAt) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  AttendanceRecord? _recordForSelectedDate(List<AttendanceRecord> records) {
-    final key = _dateKey(_selectedDate);
-    for (final record in records) {
-      if (record.dateKey == key) {
-        return record;
-      }
-    }
-    return null;
+    return recordsByDate[_dateKey(_selectedDate)];
   }
 
   Future<void> _showNoteSheet(AttendanceRecord record) async {
@@ -301,10 +202,154 @@ class _AttendanceHistoryPageState extends ConsumerState<AttendanceHistoryPage> {
     final day = value.day.toString().padLeft(2, '0');
     return '${value.year}-$month-$day';
   }
+}
 
-  String _weekDayLabel(int day) {
-    const labels = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
-    return labels[day];
+class _MonthCalendar extends StatelessWidget {
+  const _MonthCalendar({
+    required this.visibleMonth,
+    required this.selectedDate,
+    required this.recordsByDate,
+    required this.onPreviousMonth,
+    required this.onNextMonth,
+    required this.onSelectDate,
+  });
+
+  final DateTime visibleMonth;
+  final DateTime selectedDate;
+  final Map<String, AttendanceRecord> recordsByDate;
+  final VoidCallback onPreviousMonth;
+  final VoidCallback onNextMonth;
+  final ValueChanged<DateTime> onSelectDate;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final monthDays = _buildCalendarDays(visibleMonth);
+    final monthLabel = _monthLabel(visibleMonth);
+
+    return Container(
+      padding: UiSpacing.cardPadding,
+      decoration: BoxDecoration(
+        color: colors.surface.withValues(alpha: 0.82),
+        borderRadius: BorderRadius.circular(UiRadius.sheet),
+        border: Border.all(color: colors.border),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              IconButton(
+                onPressed: onPreviousMonth,
+                icon: const Icon(Icons.chevron_left_rounded),
+              ),
+              Expanded(
+                child: Text(
+                  monthLabel,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: colors.onSurface,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: onNextMonth,
+                icon: const Icon(Icons.chevron_right_rounded),
+              ),
+            ],
+          ),
+          const SizedBox(height: UiSpacing.md),
+          Row(
+            children: List.generate(
+              7,
+              (index) => Expanded(
+                child: Center(
+                  child: Text(
+                    const ['L', 'M', 'X', 'J', 'V', 'S', 'D'][index],
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: colors.onSurface.withValues(alpha: 0.62),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: UiSpacing.sm),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: monthDays.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 7,
+              childAspectRatio: 0.9,
+            ),
+            itemBuilder: (context, index) {
+              final date = monthDays[index];
+              final isInMonth = date.month == visibleMonth.month;
+              final isSelected = _isSameDate(date, selectedDate);
+              final dateKey = _dateKey(date);
+              final record = recordsByDate[dateKey];
+
+              return _CalendarCell(
+                date: date,
+                isToday: _isSameDate(date, DateTime.now()),
+                isInMonth: isInMonth,
+                isSelected: isSelected,
+                record: record,
+                onTap: () => onSelectDate(date),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<DateTime> _buildCalendarDays(DateTime month) {
+    final firstDayOfMonth = DateTime(month.year, month.month, 1);
+    final lastDayOfMonth = DateTime(month.year, month.month + 1, 0);
+    final firstWeekdayOffset = firstDayOfMonth.weekday - DateTime.monday;
+    final calendarStart = firstDayOfMonth.subtract(
+      Duration(days: firstWeekdayOffset),
+    );
+    final lastWeekdayPadding = DateTime.sunday - lastDayOfMonth.weekday;
+    final calendarEnd = lastDayOfMonth.add(Duration(days: lastWeekdayPadding));
+    final totalDays = calendarEnd.difference(calendarStart).inDays + 1;
+
+    return List.generate(
+      totalDays,
+      (index) => calendarStart.add(Duration(days: index)),
+    );
+  }
+
+  String _dateKey(DateTime value) {
+    final month = value.month.toString().padLeft(2, '0');
+    final day = value.day.toString().padLeft(2, '0');
+    return '${value.year}-$month-$day';
+  }
+
+  bool _isSameDate(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  String _monthLabel(DateTime value) {
+    const months = [
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre',
+    ];
+
+    return '${months[value.month - 1]} ${value.year}';
   }
 }
 
@@ -382,6 +427,7 @@ class _CalendarCell extends StatelessWidget {
     required this.date,
     required this.isToday,
     required this.isInMonth,
+    required this.isSelected,
     required this.record,
     required this.onTap,
   });
@@ -389,6 +435,7 @@ class _CalendarCell extends StatelessWidget {
   final DateTime date;
   final bool isToday;
   final bool isInMonth;
+  final bool isSelected;
   final AttendanceRecord? record;
   final VoidCallback onTap;
 
@@ -417,9 +464,12 @@ class _CalendarCell extends StatelessWidget {
           borderRadius: BorderRadius.circular(UiRadius.md),
           border: Border.all(
             color:
-                hasRecord
+                isSelected
+                    ? colors.primary
+                    : hasRecord
                     ? tone.withValues(alpha: 0.5)
                     : colors.border.withValues(alpha: isInMonth ? 0.2 : 0.08),
+            width: isSelected ? 1.4 : 1,
           ),
         ),
         child: Stack(

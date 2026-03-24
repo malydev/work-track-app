@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:work_track/app/theme/app_colors.dart';
 import 'package:work_track/features/attendance/presentation/pages/attendance_history_page.dart';
@@ -52,59 +50,52 @@ class _AppHomePageState extends State<AppHomePage> {
               padding: UiSpacing.navOuterPadding,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(UiRadius.panel),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(
-                    sigmaX: UiEffects.navBlurSigma,
-                    sigmaY: UiEffects.navBlurSigma,
-                  ),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(
-                        alpha: UiEffects.navSurfaceAlpha,
-                      ),
-                      borderRadius: BorderRadius.circular(UiRadius.panel),
-                      border: Border.all(
-                        color: colors.border.withValues(
-                          alpha: UiEffects.navBorderAlpha,
-                        ),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(
-                            alpha: UiEffects.navShadowAlpha,
-                          ),
-                          blurRadius: UiEffects.navShadowBlur,
-                          offset: UiEffects.navShadowOffset,
-                        ),
-                      ],
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(
+                      alpha: UiEffects.navSurfaceAlpha,
                     ),
-                    child: SafeArea(
-                      top: false,
-                      child: Padding(
-                        padding: UiSpacing.navInnerPadding,
-                        child: Row(
-                          children: [
-                            _NavItem(
-                              icon: Icons.fingerprint_rounded,
-                              label: 'Calendario',
-                              selected: _currentIndex == 0,
-                              onTap: () => setState(() => _currentIndex = 0),
-                            ),
-                            _NavItem(
-                              icon: Icons.calendar_month_rounded,
-
-                              label: 'Marcar',
-                              selected: _currentIndex == 1,
-                              onTap: () => setState(() => _currentIndex = 1),
-                            ),
-                            _NavItem(
-                              icon: Icons.person_rounded,
-                              label: 'Perfil',
-                              selected: _currentIndex == 2,
-                              onTap: () => setState(() => _currentIndex = 2),
-                            ),
-                          ],
+                    borderRadius: BorderRadius.circular(UiRadius.panel),
+                    border: Border.all(
+                      color: colors.border.withValues(
+                        alpha: UiEffects.navBorderAlpha,
+                      ),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(
+                          alpha: UiEffects.navShadowAlpha,
                         ),
+                        blurRadius: UiEffects.navShadowBlur,
+                        offset: UiEffects.navShadowOffset,
+                      ),
+                    ],
+                  ),
+                  child: SafeArea(
+                    top: false,
+                    child: Padding(
+                      padding: UiSpacing.navInnerPadding,
+                      child: Row(
+                        children: [
+                          _NavItem(
+                            icon: Icons.calendar_month_rounded,
+                            label: 'Calendario',
+                            selected: _currentIndex == 0,
+                            onTap: () => setState(() => _currentIndex = 0),
+                          ),
+                          _NavItem(
+                            icon: Icons.fingerprint_rounded,
+                            label: 'Marcar',
+                            selected: _currentIndex == 1,
+                            onTap: () => setState(() => _currentIndex = 1),
+                          ),
+                          _NavItem(
+                            icon: Icons.person_rounded,
+                            label: 'Perfil',
+                            selected: _currentIndex == 2,
+                            onTap: () => setState(() => _currentIndex = 2),
+                          ),
+                        ],
                       ),
                     ),
                   ),
