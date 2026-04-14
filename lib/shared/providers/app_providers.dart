@@ -99,6 +99,32 @@ final currentSettingsProvider = StreamProvider<AppSettings?>((ref) {
 final resolvedSettingsProvider = Provider<AppSettings>((ref) {
   final locale = ref.watch(deviceLocaleProvider);
   final timeZoneId = ref.watch(deviceTimeZoneProvider);
+  final currentSettingsAsync = ref.watch(currentSettingsProvider);
+  final currentSettings = currentSettingsAsync.asData?.value;
+
+  if (currentSettings != null) {
+    return AppSettings(
+      themeMode: currentSettings.themeMode,
+      localeCode:
+          currentSettings.useDeviceLocale
+              ? locale.toLanguageTag()
+              : (currentSettings.localeCode ?? locale.toLanguageTag()),
+      regionCode:
+          currentSettings.useDeviceLocale
+              ? (locale.countryCode ?? locale.languageCode)
+              : (currentSettings.regionCode ??
+                  locale.countryCode ??
+                  locale.languageCode),
+      timeZoneId:
+          currentSettings.useDeviceTimeZone
+              ? timeZoneId
+              : (currentSettings.timeZoneId ?? timeZoneId),
+      useDeviceTheme: currentSettings.useDeviceTheme,
+      useDeviceLocale: currentSettings.useDeviceLocale,
+      useDeviceTimeZone: currentSettings.useDeviceTimeZone,
+      workSchedule: currentSettings.workSchedule,
+    );
+  }
 
   return ref
       .watch(getResolvedSettingsUseCaseProvider)

@@ -24,6 +24,19 @@ class _AppHomePageState extends State<AppHomePage> {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final navBackground =
+        isDark
+            ? colors.surface.withValues(alpha: 0.92)
+            : Colors.white.withValues(alpha: UiEffects.navSurfaceAlpha);
+    final navBorder =
+        isDark
+            ? colors.border.withValues(alpha: 0.56)
+            : colors.border.withValues(alpha: UiEffects.navBorderAlpha);
+    final navShadowColor =
+        isDark
+            ? Colors.black.withValues(alpha: 0.18)
+            : Colors.black.withValues(alpha: UiEffects.navShadowAlpha);
 
     return Scaffold(
       extendBody: true,
@@ -52,20 +65,12 @@ class _AppHomePageState extends State<AppHomePage> {
                 borderRadius: BorderRadius.circular(UiRadius.panel),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(
-                      alpha: UiEffects.navSurfaceAlpha,
-                    ),
+                    color: navBackground,
                     borderRadius: BorderRadius.circular(UiRadius.panel),
-                    border: Border.all(
-                      color: colors.border.withValues(
-                        alpha: UiEffects.navBorderAlpha,
-                      ),
-                    ),
+                    border: Border.all(color: navBorder),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(
-                          alpha: UiEffects.navShadowAlpha,
-                        ),
+                        color: navShadowColor,
                         blurRadius: UiEffects.navShadowBlur,
                         offset: UiEffects.navShadowOffset,
                       ),
