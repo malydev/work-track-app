@@ -11,6 +11,14 @@ class AttendancePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.appColors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final heroForeground = isDark ? Colors.white : colors.onPrimary;
+    final heroForegroundMuted =
+        isDark
+            ? Colors.white.withValues(alpha: 0.86)
+            : colors.onPrimary.withValues(alpha: 0.86);
+    final primaryButtonForeground = isDark ? Colors.white : colors.primary;
+    final secondaryButtonBorder = colors.onPrimary.withValues(alpha: 0.36);
     final attendanceState = ref.watch(attendanceControllerProvider);
     final attendanceAsync = ref.watch(attendanceHistoryProvider);
     final todayRecord =
@@ -70,9 +78,9 @@ class AttendancePage extends ConsumerWidget {
               children: [
                 Text(
                   'Hoy',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: colors.onPrimary.withValues(alpha: 0.86),
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelLarge?.copyWith(color: heroForegroundMuted),
                 ),
                 const SizedBox(height: UiSpacing.sm),
                 Text(
@@ -82,35 +90,41 @@ class AttendancePage extends ConsumerWidget {
                       ? 'Entrada registrada. Falta salida.'
                       : 'Jornada completa registrada.',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: colors.onPrimary,
+                    color: heroForeground,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
                 const SizedBox(height: UiSpacing.card),
-                Wrap(
-                  spacing: UiSpacing.lg,
-                  runSpacing: UiSpacing.lg,
+                Row(
                   children: [
-                    _InfoChip(
-                      label: 'Entrada',
-                      value:
-                          todayRecord == null
-                              ? '--:--'
-                              : _formatTime(todayRecord.checkInAt),
-                      foreground: colors.onPrimary,
+                    Expanded(
+                      child: _InfoChip(
+                        label: 'Entrada',
+                        value:
+                            todayRecord == null
+                                ? '--:--'
+                                : _formatTime(todayRecord.checkInAt),
+                        foreground: heroForeground,
+                      ),
                     ),
-                    _InfoChip(
-                      label: 'Salida',
-                      value:
-                          todayRecord?.checkOutAt == null
-                              ? '--:--'
-                              : _formatTime(todayRecord!.checkOutAt!),
-                      foreground: colors.onPrimary,
+                    const SizedBox(width: UiSpacing.lg),
+                    Expanded(
+                      child: _InfoChip(
+                        label: 'Salida',
+                        value:
+                            todayRecord?.checkOutAt == null
+                                ? '--:--'
+                                : _formatTime(todayRecord!.checkOutAt!),
+                        foreground: heroForeground,
+                      ),
                     ),
-                    _InfoChip(
-                      label: 'Retraso',
-                      value: '${todayRecord?.lateArrivalMinutes ?? 0} min',
-                      foreground: colors.onPrimary,
+                    const SizedBox(width: UiSpacing.lg),
+                    Expanded(
+                      child: _InfoChip(
+                        label: 'Retraso',
+                        value: '${todayRecord?.lateArrivalMinutes ?? 0} min',
+                        foreground: heroForeground,
+                      ),
                     ),
                   ],
                 ),
@@ -130,7 +144,7 @@ class AttendancePage extends ConsumerWidget {
                                         .registerCheckIn(),
                         style: FilledButton.styleFrom(
                           backgroundColor: colors.onPrimary,
-                          foregroundColor: colors.primary,
+                          foregroundColor: primaryButtonForeground,
                           padding: UiSpacing.buttonPadding,
                         ),
                         icon: const Icon(Icons.login_rounded),
@@ -150,10 +164,8 @@ class AttendancePage extends ConsumerWidget {
                                         )
                                         .registerCheckOut(),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: colors.onPrimary,
-                          side: BorderSide(
-                            color: colors.onPrimary.withValues(alpha: 0.36),
-                          ),
+                          foregroundColor: heroForeground,
+                          side: BorderSide(color: secondaryButtonBorder),
                           padding: UiSpacing.buttonPadding,
                         ),
                         icon: const Icon(Icons.logout_rounded),
