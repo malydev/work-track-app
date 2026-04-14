@@ -41,6 +41,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           ..hideCurrentSnackBar()
           ..showSnackBar(SnackBar(content: Text(message)));
       }
+      if (next.lastSavedAt != null &&
+          next.lastSavedAt != previous?.lastSavedAt) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(
+              content: Text('Informacion del perfil actualizada.'),
+            ),
+          );
+      }
     });
 
     ref.listen(settingsControllerProvider, (previous, next) {
@@ -49,6 +59,14 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(SnackBar(content: Text(message)));
+      }
+      if (next.lastSavedAt != null &&
+          next.lastSavedAt != previous?.lastSavedAt) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(content: Text('Configuracion actualizada.')),
+          );
       }
     });
 
@@ -106,41 +124,44 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   ),
                 ),
                 const SizedBox(height: 22),
-                TextField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nombre completo',
+                Text(
+                  _nameController.text.isEmpty
+                      ? 'Usuario'
+                      : _nameController.text,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: UiSpacing.xs),
+                Text(
+                  _emailController.text.isEmpty
+                      ? 'Sin correo registrado'
+                      : _emailController.text,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colors.onSurface.withValues(alpha: 0.68),
                   ),
                 ),
-                const SizedBox(height: UiSpacing.xl),
-                TextField(
-                  controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Correo electronico',
-                  ),
-                ),
-                const SizedBox(height: UiSpacing.xl),
-                InkWell(
-                  borderRadius: BorderRadius.circular(UiRadius.md),
-                  onTap: _pickBirthDate,
-                  child: InputDecorator(
-                    decoration: const InputDecoration(labelText: 'Cumpleanos'),
-                    child: Text(
-                      _birthDate == null
-                          ? 'Seleccionar fecha'
-                          : _formatDate(_birthDate!),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: UiSpacing.card),
-                SizedBox(
+                const SizedBox(height: UiSpacing.lg),
+                Container(
                   width: double.infinity,
-                  child: FilledButton(
-                    onPressed: controllerState.isSaving ? null : _saveProfile,
-                    style: FilledButton.styleFrom(
-                      padding: UiSpacing.buttonPadding,
-                    ),
-                    child: const Text('Guardar perfil'),
+                  padding: UiSpacing.cardPadding,
+                  decoration: BoxDecoration(
+                    color: colors.primary.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(UiRadius.xl),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.cake_rounded, color: colors.primary),
+                      const SizedBox(width: UiSpacing.md),
+                      Expanded(
+                        child: Text(
+                          _birthDate == null
+                              ? 'Cumpleanos sin registrar'
+                              : 'Cumpleanos: ${_formatDate(_birthDate!)}',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -202,8 +223,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             subtitle:
                 controllerState.isSaving
                     ? 'Guardando cambios...'
-                    : 'Guardar los datos del perfil actual',
-            onTap: controllerState.isSaving ? null : _saveProfile,
+                    : 'Editar nombre, correo y cumpleanos',
+            onTap:
+                controllerState.isSaving ? null : () => _showEditProfileSheet(),
           ),
           const SizedBox(height: UiSpacing.lg),
           _ProfileMenuTile(
@@ -232,19 +254,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  Future<void> _pickBirthDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      firstDate: DateTime(1950),
-      lastDate: DateTime.now(),
-      initialDate: _birthDate ?? DateTime(2000),
-    );
-
-    if (picked != null) {
-      setState(() => _birthDate = picked);
-    }
-  }
-
   Future<void> _saveProfile() {
     return ref
         .read(userProfileControllerProvider.notifier)
@@ -267,122 +276,367 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        final colors = context.appColors;
+        var selectedMode = currentMode;
 
-        Widget option(AppThemeMode mode, String label, IconData icon) {
-          final selected = currentMode == mode;
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final colors = context.appColors;
 
-          return Padding(
-            padding: const EdgeInsets.only(bottom: UiSpacing.lg),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(UiRadius.xl),
-              onTap: () async {
-                await ref
-                    .read(settingsControllerProvider.notifier)
-                    .updateThemeMode(mode);
-                if (context.mounted) {
-                  Navigator.of(context).pop();
-                }
-              },
-              child: Container(
-                padding: UiSpacing.cardPadding,
-                decoration: BoxDecoration(
-                  color:
-                      selected
-                          ? colors.primary.withValues(alpha: 0.12)
-                          : colors.surface,
+            Widget option(AppThemeMode mode, String label, IconData icon) {
+              final selected = selectedMode == mode;
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: UiSpacing.lg),
+                child: InkWell(
                   borderRadius: BorderRadius.circular(UiRadius.xl),
-                  border: Border.all(
-                    color: selected ? colors.primary : colors.border,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      icon,
-                      color: selected ? colors.primary : colors.onSurface,
-                    ),
-                    const SizedBox(width: UiSpacing.xl),
-                    Expanded(
-                      child: Text(
-                        label,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w700),
+                  onTap: () async {
+                    setSheetState(() => selectedMode = mode);
+                    await ref
+                        .read(settingsControllerProvider.notifier)
+                        .updateThemeMode(mode);
+                    if (context.mounted) {
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: Container(
+                    padding: UiSpacing.cardPadding,
+                    decoration: BoxDecoration(
+                      color:
+                          selected
+                              ? colors.primary.withValues(alpha: 0.12)
+                              : colors.surface,
+                      borderRadius: BorderRadius.circular(UiRadius.xl),
+                      border: Border.all(
+                        color: selected ? colors.primary : colors.border,
                       ),
                     ),
-                    if (selected)
-                      Icon(Icons.check_rounded, color: colors.primary),
-                  ],
+                    child: Row(
+                      children: [
+                        Icon(
+                          icon,
+                          color: selected ? colors.primary : colors.onSurface,
+                        ),
+                        const SizedBox(width: UiSpacing.xl),
+                        Expanded(
+                          child: Text(
+                            label,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                        if (selected)
+                          Icon(Icons.check_rounded, color: colors.primary),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          );
-        }
+              );
+            }
 
-        return _MenuSheet(
-          title: 'Color y apariencia',
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              option(
-                AppThemeMode.system,
-                'Segun el sistema',
-                Icons.brightness_auto_rounded,
+            return _MenuSheet(
+              title: 'Color y apariencia',
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  option(
+                    AppThemeMode.system,
+                    'Segun el sistema',
+                    Icons.brightness_auto_rounded,
+                  ),
+                  option(
+                    AppThemeMode.light,
+                    'Modo claro',
+                    Icons.light_mode_rounded,
+                  ),
+                  option(
+                    AppThemeMode.dark,
+                    'Modo oscuro',
+                    Icons.dark_mode_rounded,
+                  ),
+                ],
               ),
-              option(
-                AppThemeMode.light,
-                'Modo claro',
-                Icons.light_mode_rounded,
-              ),
-              option(AppThemeMode.dark, 'Modo oscuro', Icons.dark_mode_rounded),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
 
   Future<void> _showWorkScheduleSheet(AppSettings settings) async {
+    final existing = settings.workSchedule;
+    TimeOfDay? checkIn = _timeOfDayFromMinutes(
+      existing?.expectedCheckInMinutes ?? (8 * 60),
+    );
+    TimeOfDay? checkOut =
+        existing?.expectedCheckOutMinutes == null
+            ? null
+            : _timeOfDayFromMinutes(existing!.expectedCheckOutMinutes!);
+    final workingDays = ValueNotifier<List<WorkDay>>(
+      List<WorkDay>.from(
+        existing?.workingDays ?? WorkSchedule.defaultWorkingDays,
+      ),
+    );
+
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) {
-        final schedule = settings.workSchedule;
+        final colors = context.appColors;
 
         return _MenuSheet(
           title: 'Preferencias de jornada',
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _InfoLine(
-                label: 'Entrada',
-                value:
-                    schedule == null
-                        ? '--'
-                        : _formatMinutes(schedule.expectedCheckInMinutes),
-              ),
-              const SizedBox(height: UiSpacing.lg),
-              _InfoLine(
-                label: 'Salida',
-                value:
-                    schedule?.expectedCheckOutMinutes == null
-                        ? '--'
-                        : _formatMinutes(schedule!.expectedCheckOutMinutes!),
-              ),
-              const SizedBox(height: UiSpacing.lg),
-              _InfoLine(
-                label: 'Dias laborales',
-                value:
-                    schedule == null
-                        ? '--'
-                        : schedule.workingDays.map(_workDayLabel).join(', '),
-              ),
-            ],
+          child: StatefulBuilder(
+            builder: (context, setSheetState) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Hora de entrada',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: UiSpacing.sm),
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      final picked = await _pickTime(
+                        initialTime:
+                            checkIn ?? const TimeOfDay(hour: 8, minute: 0),
+                      );
+                      if (picked != null) {
+                        setSheetState(() => checkIn = picked);
+                      }
+                    },
+                    icon: const Icon(Icons.login_rounded),
+                    label: Text(
+                      checkIn == null
+                          ? 'Seleccionar hora'
+                          : _formatTimeOfDay(checkIn!),
+                    ),
+                  ),
+                  const SizedBox(height: UiSpacing.card),
+                  Text(
+                    'Hora de salida',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: UiSpacing.sm),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () async {
+                            final picked = await _pickTime(
+                              initialTime:
+                                  checkOut ??
+                                  const TimeOfDay(hour: 17, minute: 0),
+                            );
+                            if (picked != null) {
+                              setSheetState(() => checkOut = picked);
+                            }
+                          },
+                          icon: const Icon(Icons.logout_rounded),
+                          label: Text(
+                            checkOut == null
+                                ? 'Opcional'
+                                : _formatTimeOfDay(checkOut!),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: UiSpacing.sm),
+                      IconButton.outlined(
+                        onPressed:
+                            checkOut == null
+                                ? null
+                                : () => setSheetState(() => checkOut = null),
+                        icon: const Icon(Icons.close_rounded),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: UiSpacing.card),
+                  Text(
+                    'Dias laborables',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: UiSpacing.sm),
+                  ValueListenableBuilder<List<WorkDay>>(
+                    valueListenable: workingDays,
+                    builder: (context, days, _) {
+                      return Wrap(
+                        spacing: UiSpacing.sm,
+                        runSpacing: UiSpacing.sm,
+                        children:
+                            WorkDay.values.map((day) {
+                              final selected = days.contains(day);
+                              return FilterChip(
+                                label: Text(_workDayLabel(day)),
+                                selected: selected,
+                                onSelected: (value) {
+                                  final next = List<WorkDay>.from(days);
+                                  if (value) {
+                                    next.add(day);
+                                  } else {
+                                    next.remove(day);
+                                  }
+                                  workingDays.value = next;
+                                },
+                                selectedColor: colors.primary.withValues(
+                                  alpha: 0.14,
+                                ),
+                              );
+                            }).toList(),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: UiSpacing.card),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: () async {
+                        final days = workingDays.value;
+                        if (days.isEmpty || checkIn == null) {
+                          ScaffoldMessenger.of(context)
+                            ..hideCurrentSnackBar()
+                            ..showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Define hora de entrada y al menos un dia laboral.',
+                                ),
+                              ),
+                            );
+                          return;
+                        }
+
+                        await ref
+                            .read(settingsControllerProvider.notifier)
+                            .updateWorkSchedule(
+                              WorkSchedule(
+                                expectedCheckInMinutes: _minutesFromTimeOfDay(
+                                  checkIn!,
+                                ),
+                                expectedCheckOutMinutes:
+                                    checkOut == null
+                                        ? null
+                                        : _minutesFromTimeOfDay(checkOut!),
+                                workingDays: days,
+                              ),
+                            );
+
+                        if (context.mounted) {
+                          Navigator.of(context).pop();
+                        }
+                      },
+                      style: FilledButton.styleFrom(
+                        padding: UiSpacing.buttonPadding,
+                      ),
+                      child: const Text('Guardar jornada'),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         );
       },
     );
+
+    workingDays.dispose();
+  }
+
+  Future<void> _showEditProfileSheet() async {
+    final nameController = TextEditingController(text: _nameController.text);
+    final emailController = TextEditingController(text: _emailController.text);
+    DateTime? birthDate = _birthDate;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return _MenuSheet(
+              title: 'Actualizar informacion',
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Nombre completo',
+                      ),
+                    ),
+                    const SizedBox(height: UiSpacing.lg),
+                    TextField(
+                      controller: emailController,
+                      decoration: const InputDecoration(
+                        labelText: 'Correo electronico',
+                      ),
+                    ),
+                    const SizedBox(height: UiSpacing.lg),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(UiRadius.md),
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          firstDate: DateTime(1950),
+                          lastDate: DateTime.now(),
+                          initialDate: birthDate ?? DateTime(2000),
+                        );
+                        if (picked != null) {
+                          setSheetState(() => birthDate = picked);
+                        }
+                      },
+                      child: InputDecorator(
+                        decoration: const InputDecoration(
+                          labelText: 'Cumpleanos',
+                        ),
+                        child: Text(
+                          birthDate == null
+                              ? 'Seleccionar fecha'
+                              : _formatDate(birthDate!),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: UiSpacing.card),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: () async {
+                          _nameController.text = nameController.text;
+                          _emailController.text = emailController.text;
+                          setState(() => _birthDate = birthDate);
+                          await _saveProfile();
+                          if (context.mounted) {
+                            Navigator.of(context).pop();
+                          }
+                        },
+                        style: FilledButton.styleFrom(
+                          padding: UiSpacing.buttonPadding,
+                        ),
+                        child: const Text('Guardar informacion'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    nameController.dispose();
+    emailController.dispose();
   }
 
   Future<void> _showRegionSheet(AppSettings settings) async {
@@ -482,6 +736,24 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final hour = (totalMinutes ~/ 60).toString().padLeft(2, '0');
     final minute = (totalMinutes % 60).toString().padLeft(2, '0');
     return '$hour:$minute';
+  }
+
+  String _formatTimeOfDay(TimeOfDay time) {
+    final hour = time.hour.toString().padLeft(2, '0');
+    final minute = time.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
+
+  TimeOfDay _timeOfDayFromMinutes(int totalMinutes) {
+    return TimeOfDay(hour: totalMinutes ~/ 60, minute: totalMinutes % 60);
+  }
+
+  int _minutesFromTimeOfDay(TimeOfDay time) {
+    return (time.hour * 60) + time.minute;
+  }
+
+  Future<TimeOfDay?> _pickTime({required TimeOfDay initialTime}) {
+    return showTimePicker(context: context, initialTime: initialTime);
   }
 
   String _themeModeLabel(AppThemeMode mode) {
@@ -653,37 +925,6 @@ class _MenuSheet extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _InfoLine extends StatelessWidget {
-  const _InfoLine({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: colors.onSurface.withValues(alpha: 0.66),
-            ),
-          ),
-        ),
-        Text(
-          value,
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-        ),
-      ],
     );
   }
 }
